@@ -44,6 +44,23 @@ class Snap_UnitTestException extends Snap_Exception {
     public function getUserMessage() {
         return $this->user_message;
     }
+    
+    /**
+     * Extracts the variable information from the outcome
+     * @param mixed $outcome
+     * @return string
+     */
+    protected function captureVariable($outcome) {
+        ob_start();
+        var_dump($outcome);
+        $explain = ob_get_contents();
+        ob_end_clean();
+        $explain = trim(str_replace(array("\r\n", "\r"), "\n", $explain));
+        
+        $explain = (strpos($explain, "\n") === FALSE) ? $explain : trim(substr($explain, 0, strpos($explain, "\n"))).'...';
+        
+        return $explain;
+    }
 
 }
 
@@ -165,6 +182,22 @@ class Snap_AssertRegexUnitTestException extends Snap_UnitTestException {
     }
 }
 
+/**
+ * Used for testing when assertions was an array
+ */
+class Snap_AssertIsArrayUnitTestException extends Snap_AssertTypeUnitTestException {
+
+    /**
+     * Constructor
+     * @param string $code the short code message
+     * @param string $message the longer dev-created message
+     * @param mixed $outcome the actual outcome
+     * @param mixed $should_be the result that it should have been
+     */
+    public function __construct($code, $message, $outcome) {
+        parent::__construct($code, $message, $outcome, 'is_array');
+    }
+}
 
 /**
  * Used for testing when assertions were supposed to be the same
@@ -235,6 +268,38 @@ class Snap_AssertNotEqualUnitTestException extends Snap_AssertCompareUnitTestExc
     }
 }
 
+/**
+ * Used for all type comparison assertions
+ */
+class Snap_AssertTypeUnitTestException extends Snap_UnitTestException {
+    /**
+     * Constructor
+     * @param string $code the short code message
+     * @param string $message the longer dev-created message
+     * @param mixed $outcome the actual outcome
+     * @param string $test the operation
+     */
+    public function __construct($code, $message, $outcome, $test) {
+        $outcome = $this->captureVariable($outcome);
+        $type = getType($outcome);
+        
+        switch (strtolower($code)) {
+            case 'assert_is_array':
+                $prefix = 'Is Array assertion failed';
+                break;
+            default:
+                $prefix = 'Unkown assertion';
+        }
+        
+        if ($message) {
+            $message = ' with user message: '.$message;
+        }
+        
+        $message = $prefix.', is of type '.$type.' ['.$outcome.']'.$message;
+        
+        parent::__construct($code, $message);
+    }
+}
 
 /**
  * Used for all basic comparisson assertions
@@ -290,24 +355,6 @@ class Snap_AssertCompareUnitTestException extends Snap_UnitTestException {
         $message = $prefix.' ['.$outcome.' '.$operator.' '.$should_be.']'.$message;
         
         parent::__construct($code, $message);
-    }
-    
-    
-    /**
-     * Extracts the variable information from the outcome
-     * @param mixed $outcome
-     * @return string
-     */
-    protected function captureVariable($outcome) {
-        ob_start();
-        var_dump($outcome);
-        $explain = ob_get_contents();
-        ob_end_clean();
-        $explain = trim(str_replace(array("\r\n", "\r"), "\n", $explain));
-        
-        $explain = (strpos($explain, "\n") === FALSE) ? $explain : trim(substr($explain, 0, strpos($explain, "\n"))).'...';
-        
-        return $explain;
     }
 
 }

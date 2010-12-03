@@ -146,6 +146,31 @@ class Snap_UnitTestCase_AssertFalse_Test extends Snap_UnitTestCase {
         return $this->assertTrue(FALSE);
     }
 }
+
+class Snap_UnitTestCase_AssertIsArray_Test extends Snap_UnitTestCase {
+    public function setUp() {}
+    public function tearDown() {}
+    
+    /**
+     * assert testing can now use IsA tests
+     */
+    public function testAssertIsArrayReturnsPassedTest() {
+        $test_item = array();
+        $result = $this->assertIsArray($test_item);
+        return $this->assertIsA($result, 'Snap_PassedTestAssertion');
+    }
+    
+    public function testFailingAssertEqualThrowsException() {
+        try {
+            $this->assertIsArray('string');
+        }
+        catch (Snap_AssertIsArrayUnitTestException $e) {
+            return $this->assertTrue(TRUE);
+        }
+        
+        return $this->assertTrue(FALSE, 'is_array() assertion failed');
+    }
+}
     
 
 class Snap_UnitTestCase_AssertEqual_Test extends Snap_UnitTestCase {
