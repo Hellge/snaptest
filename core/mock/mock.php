@@ -318,7 +318,8 @@ class Snap_MockObject {
         $output  = '';
         
         // class header
-        $class_header = 'class '.$mock_class;
+        $class_header = 'class '. str_replace('\\', '_', $mock_class);
+        
         if ($this->useExtends()) {
             $class_header .= ' extends '.$this->mocked_class;
         }
@@ -673,7 +674,7 @@ class Snap_MockObject {
         // if this is static, AND we need the original methods, copy them
         // please replace with late static bindings once PHP 5.3 becomes
         // a baseline
-        if ($this->isInherited()) {            
+        if ($this->isInherited()) {
             if ($is_static) {
                 $output .= 'public static function '.$this->class_signature.'_'.$method_name.'_original('.$param_string.') {'.$endl;
                 $output .= $this->extractMethodBody($method).$endl;
@@ -855,10 +856,10 @@ class Snap_MockObject {
             }
             $arg_output = trim($arg_output, ',');
             
-            $ready_class = 'return new '.$mock_class.'('.$arg_output.');';
+            $ready_class = 'return new '.str_replace('\\', '_', $mock_class).'('.$arg_output.');';
         }
         else {
-            $ready_class = 'return new '.$mock_class.'();';
+            $ready_class = 'return new '.str_replace('\\', '_', $mock_class).'();';
         }
 
         $ready_class = eval($ready_class);
@@ -874,7 +875,7 @@ class Snap_MockObject {
 
         // call a real constructor if required
         if ($this->isInherited() || $this->hasConstructor()) {
-            $ready_class->$constructor_method();        
+            $ready_class->$constructor_method();
         }
         
         // clean up that global
